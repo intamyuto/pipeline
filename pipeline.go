@@ -45,7 +45,6 @@ func newCandle(ts time.Time, ticker string, price int) *Candle {
 }
 
 func pipeline(ctx context.Context, opts *Options) error {
-
 	in, err := os.Open(opts.InputFilePath)
 	if err != nil {
 		return err
@@ -60,9 +59,9 @@ func pipeline(ctx context.Context, opts *Options) error {
 		in   chan *Line
 		out  chan *Candle
 	}{
-		{span: time.Duration(5 * time.Minute), in: make(chan *Line), out: make(chan *Candle)},
-		{span: time.Duration(30 * time.Minute), in: make(chan *Line), out: make(chan *Candle)},
-		{span: time.Duration(240 * time.Minute), in: make(chan *Line), out: make(chan *Candle)},
+		{span: 5 * time.Minute, in: make(chan *Line), out: make(chan *Candle)},
+		{span: 30 * time.Minute, in: make(chan *Line), out: make(chan *Candle)},
+		{span: 240 * time.Minute, in: make(chan *Line), out: make(chan *Candle)},
 	}
 
 	ins := make([]chan<- *Line, 0, len(tasks))
@@ -91,7 +90,6 @@ func pipeline(ctx context.Context, opts *Options) error {
 			// spin
 		}
 	}
-
 	return nil
 }
 
@@ -118,12 +116,11 @@ func read(r io.Reader, errch chan<- error, outs ...chan<- *Line) {
 }
 
 const (
-	TradesStart    = time.Duration(420 * time.Minute)  // 07:00 UTC
-	TradesDuration = time.Duration(1020 * time.Minute) // 24:00 UTC
+	TradesStart    = 420 * time.Minute  // 07:00 UTC
+	TradesDuration = 1020 * time.Minute // 24:00 UTC
 )
 
 func process(span time.Duration, in <-chan *Line, out chan<- *Candle) {
-
 	candles := make(map[string]*Candle)
 
 	line, ok := <-in
@@ -149,7 +146,6 @@ func process(span time.Duration, in <-chan *Line, out chan<- *Candle) {
 	}
 
 	for line := range in {
-
 		if line.Timestamp.Before(interval.l) {
 			continue // discard line
 		}
@@ -164,11 +160,10 @@ func process(span time.Duration, in <-chan *Line, out chan<- *Candle) {
 			// adjust interval
 			for line.Timestamp.After(interval.r) {
 				if interval.r.Equal(interval.max) {
-					day = day.Add(time.Duration(24 * time.Hour))
+					day = day.Add(24 * time.Hour)
 					interval.l = day.Add(TradesStart)
 					interval.r = interval.l.Add(span)
 					interval.max = interval.l.Add(TradesDuration)
-
 				} else {
 					interval.l = interval.l.Add(span)
 					interval.r = interval.r.Add(span)
