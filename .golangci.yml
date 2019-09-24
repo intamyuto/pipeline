@@ -4,7 +4,6 @@ linters:
     - bodyclose
     - deadcode
     - depguard
-    - dogsled
     - dupl 
     - errcheck
     # - funlen
@@ -13,7 +12,6 @@ linters:
     - goconst 
     - gocritic
     - gocyclo
-    - godox
     - gofmt
     - goimports
     - golint 
@@ -36,4 +34,3 @@ linters:
     - unparam 
     - unused
     - varcheck
-    - whitespace
