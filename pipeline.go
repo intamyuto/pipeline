@@ -256,7 +256,12 @@ func parsePrice(str string) (int, error) {
 
 	price := int(i) * 100
 	if len(parts) > 1 {
-		i, err := strconv.ParseInt(parts[1], 10, 0)
+		cents := parts[1]
+		if len(cents) == 1 {
+			cents += "0"
+		}
+
+		i, err := strconv.ParseInt(cents, 10, 0)
 		if err != nil {
 			return 0, err
 		}
@@ -268,6 +273,9 @@ func parsePrice(str string) (int, error) {
 func formatPrice(price int) string {
 	rem := price % 100
 	if rem > 0 {
+		if rem % 10 == 0 {
+			rem /= 10
+		}
 		return fmt.Sprintf("%d.%d", price/100, rem)
 	}
 	return fmt.Sprintf("%d", price/100)
